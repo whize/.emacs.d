@@ -385,13 +385,13 @@
            (kill-whole-line . t)
            (eval-expression-print-length . nil)
            (eval-expression-print-level . nil)))
+
 ;; 選択範囲上書き時削除挿入
 (leaf delsel
   :doc "delete selection if you insert"
   :tag "builtin"
   :added "2021-12-17"
   :global-minor-mode delete-selection-mode)
-
 
 (leaf undo-tree
   :doc "Treat undo history as a tree"
@@ -848,8 +848,8 @@
   :added "2021-12-18"
   :custom
   (ispell-program-name . "aspell")
-  :config
-  (setq-default ispell-program-name "aspell")
+  (ispell-local-dictionary . "en_US")
+  :after
   (add-to-list 'ispell-skip-region-alist '("[^\000-\377]+"))
   )
 
