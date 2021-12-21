@@ -89,15 +89,18 @@
             ;; (use-dialog-box . nil)
             ;; (use-file-dialog . nil)
             ;; (menu-bar-mode . t)
-            ;; (tool-bar-mode . nil)
+            (tool-bar-mode . nil)
             (scroll-bar-mode . nil)
             (indent-tabs-mode . nil)
+            (mac-option-modifier . 'meta)
+            ;; (mac-auto-operator-composition-mode . t)
             )
   :config
   (setq inhibit-startup-message t)
   (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?)
-  (set-frame-parameter nil 'alpha 98)   ;背景透過
+  (set-frame-position nil 0 -24)
+;;  (set-frame-parameter nil 'alpha 98)   ;背景透過
   (size-indication-mode t)
   (setq next-line-add-newlines t)
   :hook
@@ -106,7 +109,8 @@
   (pdf-view-mode-hook . (lambda ()
                           (display-line-numbers-mode 0)))
   (vterm-mode-hook . (lambda ()
-                          (display-line-numbers-mode 0)))
+                       (display-line-numbers-mode 0)))
+  (before-save-hook . 'gofmt-before-save)
   )
 
 (setq gc-cons-threshold 16777216)
@@ -114,8 +118,44 @@
 
 (setq default-frame-alist
       '(
-;;        (font . "FiraCode Nerd Font 14")))
-        (font . "Cica 14")))
+       (font . "FiraCode Nerd Font 13")))
+        ;; (font . "Cica 14")))
+
+;; ligatures setting
+;; refer: https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
+;;
+(when (window-system)
+  (set-frame-font "Fira Code"))
+(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+               (36 . ".\\(?:>\\)")
+               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+               (48 . ".\\(?:x[a-zA-Z]\\)")
+               (58 . ".\\(?:::\\|[:=]\\)")
+               (59 . ".\\(?:;;\\|;\\)")
+               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+               (91 . ".\\(?:]\\)")
+               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+               (94 . ".\\(?:=\\)")
+               (119 . ".\\(?:ww\\)")
+               (123 . ".\\(?:-\\)")
+               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)")
+               )
+             ))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+
 
 ;;; Scroll settings
 ;; スクロール設定
@@ -558,6 +598,10 @@
   :hook ((text-mode-hook . pangu-spacing-mode)
          (org-mode-hook . pangu-spacing-mode)))
 
+(leaf syntax
+  :doc "helper functions to find syntactic context"
+  :tag "builtin"
+  :added "2021-12-20")
 
 (leaf flycheck
   :doc "On-the-fly syntax checking"
@@ -587,7 +631,7 @@
     :added "2021-12-18"
     :ensure t
     :after flyspell
-    :hook (flyspell-mode-hook . flyspell-popu-auto-correct-mode)))
+    :hook (flyspell-mode-hook . flyspell-popup-auto-correct-mode)))
 
 (leaf editorconfig
   :doc "EditorConfig Emacs Plugin"
@@ -609,6 +653,7 @@
   :emacs>= 25.1
   :ensure t
   :blackout t
+  :defvar company-backends
   :leaf-defer nil
   :bind ((company-active-map
           ("M-n" . nil)
@@ -625,6 +670,7 @@
            ;; (company-transformers . '(company-sort-by-occurrence))
            )
   :global-minor-mode global-company-mode)
+
 
 (leaf eldoc
   :doc "Show function arglist or variable docstring in echo area"
@@ -830,17 +876,83 @@
   (org-mode-hook . hl-todo-mode)
   )
 
-;; Languages
+
+;;; Languages
+
+;;; Golang
+
+(setenv "GO111MODULE" "on")
+
+(leaf go-eldoc
+  :doc "eldoc for go-mode"
+  :req "emacs-24.3" "go-mode-1.0.0"
+  :tag "emacs>=24.3"
+  :url "https://github.com/syohex/emacs-go-eldoc"
+  :added "2021-12-20"
+  :emacs>= 24.3
+  :ensure t
+  :after go-mode)
+
 (leaf go-mode
   :doc "Major mode for the Go programming language"
   :tag "go" "languages"
   :url "https://github.com/dominikh/go-mode.el"
   :added "2021-12-18"
   :ensure t
+  :bind
+  ("M-." . go-guru-definition)
+  ((go-mode-map
+    ("M-," . pop-tag-mark)))
   :hook
-  (before-save-hook . gofmt-before-save)
   (go-mode-hook . lsp-deferred)
+  (go-mode-hook . go-eldoc-setup)
+  (before-save-hook . gofmt-before-save)
+  :custom
+  (gofmt-command . "goimports")
   )
+
+(leaf go-guru
+  :doc "Integration of the Go 'guru' analysis tool into Emacs."
+  :req "go-mode-1.3.1" "cl-lib-0.5"
+  :tag "tools"
+  :added "2021-12-20"
+  :ensure t
+  :after go-mode)
+
+(leaf gorepl-mode
+  :doc "Go REPL Interactive Development in top of Gore"
+  :req "emacs-24" "s-1.11.0" "f-0.19.0" "hydra-0.13.0"
+  :tag "gorepl" "golang" "go" "languages" "emacs>=24"
+  :url "http://www.github.com/manute/gorepl-mode"
+  :added "2021-12-20"
+  :emacs>= 24
+  :ensure t
+  :after hydra
+  :commands
+  (gorepl-run-load-current-file)
+  )
+
+(leaf go-tag
+  :doc "Edit Golang struct field tag"
+  :req "emacs-24.0" "go-mode-1.5.0"
+  :tag "tools" "emacs>=24.0"
+  :url "https://github.com/brantou/emacs-go-tag"
+  :added "2021-12-20"
+  :emacs>= 24.0
+  :ensure t
+  :after go-mode)
+
+(leaf flycheck-golangci-lint
+  :doc "Flycheck checker for golangci-lint"
+  :req "emacs-24" "flycheck-0.22"
+  :tag "go" "tools" "convenience" "emacs>=24"
+  :url "https://github.com/weijiangan/flycheck-golangci-lint"
+  :added "2021-12-20"
+  :emacs>= 24
+  :ensure t
+  :after flycheck
+  :hook
+  (go-mode . flycheck-golangci-lint-setup))
 
 (leaf web-mode
   :doc "major mode for editing web templates"
@@ -892,6 +1004,81 @@
   :ensure t
   :init
   '(require 'ox-gfm nil t))
+
+(leaf rainbow-delimiters
+  :doc "Highlight brackets according to their depth"
+  :tag "tools" "lisp" "convenience" "faces"
+  :url "https://github.com/Fanael/rainbow-delimiters"
+  :added "2021-12-19"
+  :ensure t)
+
+(leaf php-cs-fixer
+  :doc "php-cs-fixer wrapper."
+  :req "cl-lib-0.5"
+  :tag "php" "languages"
+  :url "https://github.com/OVYA/php-cs-fixer"
+  :added "2021-12-19"
+  :ensure t)
+
+(leaf php-boris
+  :doc "Run boris php REPL"
+  :tag "boris" "repl" "commint" "php"
+  :added "2021-12-19"
+  :ensure t)
+
+(leaf phpunit
+  :doc "Launch PHP unit tests using phpunit"
+  :req "s-1.12.0" "f-0.19.0" "pkg-info-0.6" "cl-lib-0.5" "emacs-24.3"
+  :tag "phpunit" "tests" "php" "tools" "emacs>=24.3"
+  :url "https://github.com/nlamirault/phpunit.el"
+  :added "2021-12-19"
+  :emacs>= 24.3
+  :ensure t)
+
+(leaf php-mode
+  :doc "Major mode for editing PHP code"
+  :req "emacs-25.2"
+  :tag "php" "languages" "emacs>=25.2"
+  :url "https://github.com/emacs-php/php-mode"
+  :added "2021-12-19"
+  :emacs>= 25.2
+  :ensure t
+  :custom
+  (php-mode-template-compatibility . nil)
+  :hook
+  (php-mode . rainbow-delimiters-mode)
+  )
+
+(leaf markdown-mode
+  :doc "Major mode for Markdown-formatted text"
+  :req "emacs-25.1"
+  :tag "itex" "github flavored markdown" "markdown" "emacs>=25.1"
+  :url "https://jblevins.org/projects/markdown-mode/"
+  :added "2021-12-20"
+  :emacs>= 25.1
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode
+  (("README\\.md\\'" . gfm-mode)
+   ("\\.md\\'" . gfm-mode))
+  :init
+  (defvar markdown-command "/usr/local/bin/multimarkdown"))
+
+(leaf plantuml-mode
+  :doc "Major mode for PlantUML"
+  :req "dash-2.0.0" "emacs-25.0"
+  :tag "ascii" "plantuml" "uml" "emacs>=25.0"
+  :added "2021-12-20"
+  :emacs>= 25.0
+  :ensure t
+  :custom
+  (plantuml-executable-path . "plantuml")
+  (plantuml-default-exec-mode . 'jar)
+  (plantuml-jar-path . "~/bin/plantuml.jar")
+  (plantuml-output-type . "png")
+  :config
+  (add-to-list 'auto-mode-alist '("\\.pu$" . plantuml-mode))
+  )
 
 (leaf calendar
   :doc "calendar functions"
