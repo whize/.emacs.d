@@ -63,4 +63,7 @@ var/
 # transient
 transient/
 
+.dap-breakpoints
+.lsp-session-v1
+
 # End of https://www.toptal.com/developers/gitignore/api/emacs
