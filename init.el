@@ -613,7 +613,8 @@
   :ensure t
   :bind (("M-n" . flycheck-next-error)
          ("M-p" . flycheck-previous-error))
-  :global-minor-mode global-flycheck-mode)
+  :global-minor-mode global-flycheck-mode
+  )
 
 (leaf flyspell
   :doc "On-the-fly spell checker"
@@ -750,7 +751,11 @@
     (lsp-idle-delay . 0.500)
     (lsp-enable-files-watchers . nil)
     (lsp-completion-provider . :capf)
-    (lsp-headerline-breadcrumb-segments . '(symbols)))
+    (lsp-headerline-breadcrumb-segments . '(symbols))
+    ;; (lsp-rust-server . 'rust-analyzer)
+    (lsp-rust-analyzer-cargo-watch-command . "clippy")
+    (lsp-rust-analyzer-server-display-inlay-hints . t)
+    )
   :commands
   (lsp lsp-deferred)
   :hook
@@ -900,8 +905,8 @@
   :added "2021-12-18"
   :ensure t
   :bind
-  ("M-." . go-guru-definition)
   ((go-mode-map
+    ("M-." . go-guru-definition)
     ("M-," . pop-tag-mark)))
   :hook
   (go-mode-hook . lsp-deferred)
@@ -954,6 +959,47 @@
   :hook
   (go-mode . flycheck-golangci-lint-setup))
 
+;; PHP
+;; I usually use PHPStrom
+(leaf php-cs-fixer
+  :doc "php-cs-fixer wrapper."
+  :req "cl-lib-0.5"
+  :tag "php" "languages"
+  :url "https://github.com/OVYA/php-cs-fixer"
+  :added "2021-12-19"
+  :ensure t)
+
+(leaf php-boris
+  :doc "Run boris php REPL"
+  :tag "boris" "repl" "commint" "php"
+  :added "2021-12-19"
+  :ensure t)
+
+(leaf phpunit
+  :doc "Launch PHP unit tests using phpunit"
+  :req "s-1.12.0" "f-0.19.0" "pkg-info-0.6" "cl-lib-0.5" "emacs-24.3"
+  :tag "phpunit" "tests" "php" "tools" "emacs>=24.3"
+  :url "https://github.com/nlamirault/phpunit.el"
+  :added "2021-12-19"
+  :emacs>= 24.3
+  :ensure t)
+
+(leaf php-mode
+  :doc "Major mode for editing PHP code"
+  :req "emacs-25.2"
+  :tag "php" "languages" "emacs>=25.2"
+  :url "https://github.com/emacs-php/php-mode"
+  :added "2021-12-19"
+  :emacs>= 25.2
+  :ensure t
+  :custom
+  (php-mode-template-compatibility . nil)
+  :hook
+  (php-mode-hook . rainbow-delimiters-mode)
+  (php-mode-hook . php-enable-psr2-coding-style)
+  )
+
+;; Web
 (leaf web-mode
   :doc "major mode for editing web templates"
   :req "emacs-23.1"
@@ -961,8 +1007,62 @@
   :url "https://web-mode.org"
   :added "2021-12-18"
   :emacs>= 23.1
-  :ensure t)
+  :ensure t
+  :custom
+  (web-mode-enable-auto-pairing . t)
+  (web-mode-enable-auto-closing . t)
+  (web-mode-enable-current-element-highlight . t)
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  )
 
+;; Rust language
+;; (leaf rust-mode
+;;   :doc "A major-mode for editing Rust source code"
+;;   :req "emacs-25.1"
+;;   :tag "languages" "emacs>=25.1"
+;;   :url "https://github.com/rust-lang/rust-mode"
+;;   :added "2021-12-22"
+;;   :emacs>= 25.1
+;;   :ensure t
+;;   :custom
+;;   (rust-format-on-save . t)
+;;   :hook
+;;   (flycheck-mode-hook . #'flycheck-rust-setup))
+
+(leaf rustic
+  :doc "Rust development environment"
+  :req "emacs-26.1" "rust-mode-1.0.3" "dash-2.13.0" "f-0.18.2" "let-alist-1.0.4" "markdown-mode-2.3" "project-0.3.0" "s-1.10.0" "seq-2.3" "spinner-1.7.3" "xterm-color-1.6"
+  :tag "languages" "emacs>=26.1"
+  :added "2021-12-22"
+  :emacs>= 26.1
+  :ensure t
+  :after rust-mode markdown-mode project spinner xterm-color
+  :custom
+  (rustic-format-on-save . t))
+
+;; (leaf cargo
+;;   :doc "Emacs Minor Mode for Cargo, Rust's Package Manager."
+;;   :req "emacs-24.3" "markdown-mode-2.4"
+;;   :tag "tools" "emacs>=24.3"
+;;   :added "2021-12-22"
+;;   :emacs>= 24.3
+;;   :ensure t
+;;   :after markdown-mode
+;;   :hook
+;;   (rustic-mode . cargo-minor-mode))
+
+;; (leaf flycheck-rust
+;;   :doc "Flycheck: Rust additions and Cargo support"
+;;   :req "emacs-24.1" "flycheck-28" "dash-2.13.0" "seq-2.3" "let-alist-1.0.4"
+;;   :tag "convenience" "tools" "emacs>=24.1"
+;;   :url "https://github.com/flycheck/flycheck-rust"
+;;   :added "2021-12-22"
+;;   :emacs>= 24.1
+;;   :ensure t
+;;   :after flycheck)
+
+;; File type
 (leaf json-mode
   :doc "Major mode for editing JSON files."
   :req "json-snatcher-1.0.0" "emacs-24.4"
@@ -1012,42 +1112,6 @@
   :added "2021-12-19"
   :ensure t)
 
-(leaf php-cs-fixer
-  :doc "php-cs-fixer wrapper."
-  :req "cl-lib-0.5"
-  :tag "php" "languages"
-  :url "https://github.com/OVYA/php-cs-fixer"
-  :added "2021-12-19"
-  :ensure t)
-
-(leaf php-boris
-  :doc "Run boris php REPL"
-  :tag "boris" "repl" "commint" "php"
-  :added "2021-12-19"
-  :ensure t)
-
-(leaf phpunit
-  :doc "Launch PHP unit tests using phpunit"
-  :req "s-1.12.0" "f-0.19.0" "pkg-info-0.6" "cl-lib-0.5" "emacs-24.3"
-  :tag "phpunit" "tests" "php" "tools" "emacs>=24.3"
-  :url "https://github.com/nlamirault/phpunit.el"
-  :added "2021-12-19"
-  :emacs>= 24.3
-  :ensure t)
-
-(leaf php-mode
-  :doc "Major mode for editing PHP code"
-  :req "emacs-25.2"
-  :tag "php" "languages" "emacs>=25.2"
-  :url "https://github.com/emacs-php/php-mode"
-  :added "2021-12-19"
-  :emacs>= 25.2
-  :ensure t
-  :custom
-  (php-mode-template-compatibility . nil)
-  :hook
-  (php-mode . rainbow-delimiters-mode)
-  )
 
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
@@ -1077,7 +1141,7 @@
   (plantuml-jar-path . "~/bin/plantuml.jar")
   (plantuml-output-type . "png")
   :config
-  (add-to-list 'auto-mode-alist '("\\.pu$" . plantuml-mode))
+  (add-to-list 'auto-mode-alist '("\\.pu$\\'" . plantuml-mode))
   )
 
 (leaf calendar
