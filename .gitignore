@@ -66,4 +66,7 @@ transient/
 .dap-breakpoints
 .lsp-session-v1
 
+kkcrc
+projects
+
 # End of https://www.toptal.com/developers/gitignore/api/emacs
