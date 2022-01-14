@@ -187,7 +187,8 @@
   (exec-path-from-shell-arguments . "")
   (exec-path-from-shell-variables . '("PATH" "GOPATH"))
   :init
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  )
 
 (leaf *mini-frame
   :if (version<= "27" emacs-version)
@@ -1063,6 +1064,15 @@
 ;;   :after flycheck)
 
 ;; File type
+(leaf dotenv-mode
+  :doc "Major mode for .env files"
+  :req "emacs-24.3"
+  :tag "emacs>=24.3"
+  :url "https://github.com/preetpalS/emacs-dotenv-mode"
+  :added "2022-01-14"
+  :emacs>= 24.3
+  :ensure t)
+
 (leaf json-mode
   :doc "Major mode for editing JSON files."
   :req "json-snatcher-1.0.0" "emacs-24.4"
