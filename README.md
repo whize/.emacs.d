@@ -12,7 +12,7 @@ I use Mac so I installed [emacs-mac](https://github.com/railwaycat/homebrew-emac
 
 ``` shell
 $ brew tap railwaycat/emacsmacport
-$ brew install emacs-port --with-dbus --with-ctags --with-no-title-bars --with-emacs-sexy-icon
+$ brew install emacs-mac --with-dbus --with-ctags --with-no-title-bars --with-emacs-sexy-icon
 ```
 
 ### Install Font
