@@ -100,7 +100,7 @@
   (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?)
   (set-frame-position nil 0 -24)
-;;  (set-frame-parameter nil 'alpha 98)   ;背景透過
+  (set-frame-parameter nil 'alpha 98)   ;背景透過
   (size-indication-mode t)
   (setq next-line-add-newlines t)
   :hook
@@ -621,6 +621,9 @@
   :doc "On-the-fly spell checker"
   :tag "builtin"
   :added "2021-12-18"
+  :custom
+  (ispell-program-name . "aspell")
+  (ispell-local-dictionary . "en_US")
   :hook
   (text-mode-hook . flyspell-mode)
   (org-mode-hook . flyspell-mode)
