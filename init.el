@@ -96,6 +96,9 @@
             ;; (mac-auto-operator-composition-mode . t)
             )
   :config
+  (set-language-environment "Japanese")
+  (prefer-coding-system 'utf-8)
+  (set-default 'buffer-file-coding-system 'utf-8)
   (setq inhibit-startup-message t)
   (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?)
@@ -867,7 +870,9 @@
   :tag "builtin"
   :added "2021-12-18"
   :custom
-  ((org-startup-indented . t)
+  ((org-directory . "~/org")
+   (org-default-note-file . "notes.org")
+   (org-startup-indented . t)
    (org-structure-template-alist . '(("a" . "export ascii\n")
                                      ("c" . "center\n")
                                      ("C" . "comment\n")
@@ -878,14 +883,37 @@
                                      ("q" . "quote\n")
                                      ("s" . "src\n")
                                      ("v" . "verse\n")))
+   (org-modules . (org-modules org-tempo))
    )
-  :custom
-  '((org-modules . (org-modules org-tempo)))
   :hook
   (org-mode-hook . hl-todo-mode)
   )
 
-
+(leaf org-capture
+  :doc "Fast note taking in Org"
+  :tag "builtin" "wp" "calendar" "hypermedia" "outlines"
+  :url "https://orgmode.org"
+  :added "2022-02-11"
+  :commands org-capture
+  :bind ("C-c c" . org-capture)
+  :custom
+  (org-capture-templates .
+        `(
+          ("t"
+           "task"
+           entry
+           (file+headline "~/org/todo.org" "TASK")
+           "** TODO %?\nEntered on %U\n %i\n"
+           :empty-lines 1
+           )
+          ("n"
+           "Notes"
+           entry
+           (file+headline "~/org/notes.org" "Notes")
+           "* %?\nEntered on %U\n %i\n %a"
+           )
+          ))
+  :after org)
 ;;; Languages
 
 ;;; Golang

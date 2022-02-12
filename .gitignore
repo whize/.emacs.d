@@ -68,5 +68,6 @@ transient/
 
 kkcrc
 projects
+bookmarks
 
 # End of https://www.toptal.com/developers/gitignore/api/emacs
