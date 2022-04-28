@@ -102,7 +102,7 @@
   (setq inhibit-startup-message t)
   (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?)
-  (set-frame-position nil 0 -24)
+  ;; (set-frame-position nil 0 -24)
   (set-frame-parameter nil 'alpha 98)   ;背景透過
   (size-indication-mode t)
   (setq next-line-add-newlines t)
@@ -267,17 +267,26 @@
 
 (leaf *color-theme
   :config
-  (leaf doom-themes
-    :doc "an opinionated pack of modern color-themes"
-    :req "emacs-25.1" "cl-lib-0.5"
-    :tag "faces" "custom themes" "emacs>=25.1"
-    :url "https://github.com/hlissner/emacs-doom-themes"
-    :added "2021-12-18"
-    :emacs>= 25.1
+  (leaf nord-theme
+    :doc "An arctic, north-bluish clean and elegant theme"
+    :req "emacs-24"
+    :tag "emacs>=24"
+    :url "https://github.com/arcticicestudio/nord-emacs"
+    :added "2022-03-03"
+    :emacs>= 24
     :ensure t
-    :init (load-theme 'doom-one t)
-    :config
-    (doom-themes-neotree-config))
+    :init (load-theme 'nord t))
+  ;; (leaf doom-themes
+  ;;   :doc "an opinionated pack of modern color-themes"
+  ;;   :req "emacs-25.1" "cl-lib-0.5"
+  ;;   :tag "faces" "custom themes" "emacs>=25.1"
+  ;;   :url "https://github.com/hlissner/emacs-doom-themes"
+  ;;   :added "2021-12-18"
+  ;;   :emacs>= 25.1
+  ;;   :ensure t
+  ;;   :init (load-theme 'doom-one t)
+  ;;   :config
+  ;;   (doom-themes-neotree-config))
   ;; (leaf cyberpunk-theme
   ;;   :doc "Cyberpunk Color Theme"
   ;;   :tag "cyberpunk" "theme" "color"
@@ -884,6 +893,11 @@
                                      ("s" . "src\n")
                                      ("v" . "verse\n")))
    (org-modules . (org-modules org-tempo))
+   (org-log-done . 'time)
+   (org-todo-keywords . '(
+                          (sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c@)")))
+   (org-agenda-files . '("~/org"))
+   (org-refile-targets . '((org-agenda-files :maxlevel . 3)))
    )
   :hook
   (org-mode-hook . hl-todo-mode)
@@ -913,6 +927,19 @@
            "* %?\nEntered on %U\n %i\n %a"
            )
           ))
+  :after org)
+
+(leaf org-journal
+  :doc "a simple org-mode based journaling mode"
+  :req "emacs-25.1" "org-9.1"
+  :tag "emacs>=25.1"
+  :url "http://github.com/bastibe/org-journal"
+  :added "2022-02-12"
+  :emacs>= 25.1
+  :ensure t
+  :custom
+  ((org-journal-dir . "~/org/journal")
+   (org-journal-date-format . "%F (%A)"))
   :after org)
 ;;; Languages
 
@@ -1168,6 +1195,15 @@
    ("\\.md\\'" . gfm-mode))
   :init
   (defvar markdown-command "/usr/local/bin/multimarkdown"))
+
+(leaf markdown-toc
+  :doc "A simple TOC generator for markdown file"
+  :req "s-1.9.0" "dash-2.11.0" "markdown-mode-2.1"
+  :tag "tools" "toc" "markdown"
+  :url "http://github.com/ardumont/markdown-toc"
+  :added "2022-04-14"
+  :ensure t
+  :after markdown-mode)
 
 (leaf plantuml-mode
   :doc "Major mode for PlantUML"
