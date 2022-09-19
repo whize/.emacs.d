@@ -93,13 +93,15 @@
             (scroll-bar-mode . nil)
             (indent-tabs-mode . nil)
             (mac-option-modifier . 'meta)
+            (inhibit-splash-screen . t)
             ;; (mac-auto-operator-composition-mode . t)
             )
   :config
   (set-language-environment "Japanese")
   (prefer-coding-system 'utf-8)
   (set-default 'buffer-file-coding-system 'utf-8)
-  (setq inhibit-startup-message t)
+  ;; (setq inhibit-splash-screen t)
+  ;; (setq inhibit-startup-message t)
   (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?)
   ;; (set-frame-position nil 0 -24)
@@ -771,6 +773,8 @@
     ;; (lsp-rust-server . 'rust-analyzer)
     (lsp-rust-analyzer-cargo-watch-command . "clippy")
     (lsp-rust-analyzer-server-display-inlay-hints . t)
+    (lsp-register-custom-settings
+     '(gopls.experimentalWorkspaceModule . t))
     )
   :commands
   (lsp lsp-deferred)
